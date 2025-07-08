@@ -2,96 +2,75 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayDeque;
 import java.util.Queue;
+import java.util.StringTokenizer;
 
 public class Main {
-	
-	static int w, h;
-	static int[][] map;
-	static Queue<int[]> toVisit;
-	static boolean[][] visited;
-	static int count;
-	static int[] dx = {0, 1, 1, 1, 0, -1, -1, -1};
-	static int[] dy = {1, 1, 0, -1, -1, -1, 0, 1};
+    static int W, H;
+    static int[][] map;
 
-	public static void main(String[] args) throws Exception {
-		
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		StringBuilder sb = new StringBuilder();
-		
-		while(true) {
-			String[] input = br.readLine().split(" ");
-			w = Integer.parseInt(input[0]);
-			h = Integer.parseInt(input[1]);
-			
-			if(w == 0 && h == 0) break;
-			
-			map = new int[h][w];
-			visited = new boolean[h][w];
-			
-			int cnt = 0; //섬 유무 확인
-			
-			for(int i=0; i<h; i++) {
-				input = br.readLine().split(" ");
-				for(int j=0; j<w; j++) {
-					map[i][j] = Integer.parseInt(input[j]);
-					if(map[i][j] == 0) {
-						visited[i][j] = true;
-					}
-					else cnt++;
-				}
-			}
-			
-			//섬이 없을 경우
-			if(cnt == 0) {
-				sb.append("0\n");
-				continue;
-			}
-			
-			//섬이 있을 경우
-			count = 0;
-			toVisit = new ArrayDeque<>();
-			
-			for(int i=0; i<h; i++) {
-				for(int j=0; j<w; j++) {
-					if(visited[i][j]) continue;
-					count++;
-					isConnected(new int[] {i, j});
-				}
-			}
-			
-			sb.append(count + "\n");
-		}
-		
-		System.out.println(sb);
-	}
+    static int[] dx = {0, 0, 1, -1, 1, 1, -1, -1};
+    static int[] dy = {1, -1, 0, 0, 1, -1, 1, -1};
 
-	//섬이 연결되어 있으면 count 1 감소
-	private static void isConnected(int[] cur) {
-		
-		if(visited[cur[0]][cur[1]]) {
-			return;
-		}
+    public static void main(String[] args) throws Exception {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringBuilder sb = new StringBuilder();
 
-		visited[cur[0]][cur[1]] = true;
-		search(cur);
+        while (true) {
+            StringTokenizer st = new StringTokenizer(br.readLine());
+            W = Integer.parseInt(st.nextToken());
+            H = Integer.parseInt(st.nextToken());
 
-		while(!toVisit.isEmpty()) {
-			isConnected(toVisit.poll());
-		}
-	}
+            if (W == 0 && H == 0) break;
 
-	private static void search(int[] cur) {
+            map = new int[H][W];
+            Queue<int[]> land = new ArrayDeque<>();
 
-		for(int i=0; i<8; i++) {
-			int curX = cur[0] + dx[i];
-			int curY = cur[1] + dy[i];
-	
-			if(curX < 0 || curX >= h) continue;
-			if(curY < 0 || curY >= w) continue;
-			
-			if(visited[curX][curY]) continue;
-			
-			toVisit.offer(new int[] {curX, curY});
-		}
-	}
+            for (int i=0; i<H; i++) {
+                st = new StringTokenizer(br.readLine());
+                for (int j=0; j<W; j++) {
+                    int temp = Integer.parseInt(st.nextToken());
+                    if (temp == 0) continue;
+
+                    map[i][j] = 1;
+                    land.offer(new int[] {i, j});
+                }
+            }
+
+            int totalCnt = 0;
+            while (!land.isEmpty()) {
+                int[] curLand = land.poll();
+                int x = curLand[0];
+                int y = curLand[1];
+
+                if (map[x][y] != 1) continue;
+
+                searchIsland(x, y, ++totalCnt + 1);
+            }
+
+            sb.append(totalCnt).append("\n");
+        }
+
+        System.out.println(sb);
+    }
+
+    static void searchIsland(int x, int y, int num) {
+        Queue<int[]> toVisit = new ArrayDeque<>();
+        toVisit.offer(new int[] {x, y});
+        map[x][y] = num;
+
+        while (!toVisit.isEmpty()) {
+            int[] cur = toVisit.poll();
+
+            for(int i=0; i<8; i++) {
+                int nx = cur[0] + dx[i];
+                int ny = cur[1] + dy[i];
+
+                if (nx < 0 || nx >= H || ny < 0 || ny >= W) continue;
+                if (map[nx][ny] != 1) continue;
+
+                map[nx][ny] = num;
+                toVisit.offer(new int[] {nx, ny});
+            }
+        }
+    }
 }
